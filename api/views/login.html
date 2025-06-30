@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin|Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --prim: #3040D6;
+        }
+
+        body {
+            font-family: "Montserrat", sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100dvh;
+        }
+
+        body form {
+            display: flex;
+            flex-direction: column;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 22px;
+            padding: 22px;
+            box-shadow: 0 0 3px 1.5px rgba(0, 0, 0, .05);
+        }
+
+        body form h1 {
+            color: var(--prim);
+        }
+
+        body form label {
+            display: block;
+            font-size: 14px;
+            color: var(--prim);
+            margin: 8px 0;
+        }
+
+        body form input {
+            width: 100%;
+            margin: 12px 0;
+            border-radius: 8px;
+            outline: none;
+            border: solid 1px var(--prim);
+            padding: 16px 4px;
+        }
+
+        #inputGroup {
+            display: flex;
+            align-items: "center";
+            border: solid 1px var(--prim);
+
+            width: 100%;
+            margin: 12px 0;
+            border-radius: 8px;
+
+        }
+
+        #inputGroup input {
+            height: 100%;
+            flex: 1;
+            width: auto;
+            margin: 0;
+            border: none;
+            /* border-radius: 0; */
+            outline: none;
+        }
+
+        #inputGroup button {
+            background: transparent;
+            border: none;
+            margin-right: 12px;
+        }
+
+        #submit {
+            color: #fff;
+            background-color: var(--prim);
+            font-weight: bold;
+            padding: 18px 0;
+            width: 100%;
+            margin: 12px auto;
+            border: none;
+            cursor: pointer;
+        }
+
+        #submit:hover {
+            background-color: #3d4abb;
+            transition: color 300ms linear;
+        }
+
+        .error-msg {
+            color: #e63946;
+            font-size: 12px;
+            padding: 0 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <form>
+        <h1>Welcome Admin</h1>
+
+        <label for="email">Email</label>
+        <input id="email" type="email" />
+        <p class="error-msg"></p>
+
+        <label for="password">Password</label>
+        <div id="inputGroup">
+            <input type="password" id="password" />
+            <button type="button" id="showPasswordBtn"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                    fill="currentColor" class="bi bi-eye" viewBox="0 0 16 16">
+                    <path
+                        d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
+                    <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
+                </svg></button>
+        </div>
+        <p class="error-msg"></p>
+
+
+
+        <button type="button" id="submit">Login</button>
+
+    </form>
+
+
+    <script>
+
+        const passwordInput = document.getElementById("password");
+        const passwordInputContainer = document.getElementById("inputGroup")
+        const emailInput = document.getElementById("email");
+        const showPasswordBtn = document.getElementById("showPasswordBtn");
+        const submitButton = document.getElementById("submit")
+
+
+        const eyeSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye" viewBox="0 0 16 16">
+  <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/>
+  <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"/>
+</svg>`
+        const eyeOffSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-slash" viewBox="0 0 16 16">
+  <path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7 7 0 0 0-2.79.588l.77.771A6 6 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755q-.247.248-.517.486z"/>
+  <path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829 2.829zm-2.943 1.299.822.822a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5 2.5 0 0 0 2.829 2.829"/>
+  <path d="M3.35 5.47q-.27.24-.518.487A13 13 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7 7 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884-12-12 .708-.708 12 12z"/>
+</svg>`
+
+        function passwordShowToggle() {
+
+            if (passwordInput.getAttribute("type") === "text") {
+                passwordInput.setAttribute("type", "password")
+                showPasswordBtn.innerHTML = eyeSvg;
+            }
+            else {
+                passwordInput.setAttribute("type", "text");
+                showPasswordBtn.innerHTML = eyeOffSvg;
+            }
+        }
+        showPasswordBtn.addEventListener("click", () => {
+            passwordShowToggle();
+        });
+
+        emailInput.addEventListener("focusin", function () {
+            this.style.borderColor = "#3040D6";
+            passwordInputContainer.style.borderColor = "#3040D6";
+
+
+            const errorMessages = document.querySelectorAll(".error-msg")
+            console.log(errorMessages)
+            errorMessages.forEach(e => e.innerHTML = "")
+        })
+
+
+        passwordInput.addEventListener("focusin", () => {
+
+            const errorMessages = document.querySelectorAll(".error-msg")
+            console.log(errorMessages)
+            errorMessages.forEach(e => e.innerHTML = "")
+
+            passwordInputContainer.borderColor = "#3040D6";
+            emailInput.style.borderColor = "#3040D6";
+        })
+
+        submitButton.addEventListener("click", function () {
+
+            const email = emailInput.value || "";
+            const password = passwordInput.value || "";
+
+            const cred = { email, password };
+
+
+            fetch("http://localhost:3000/auth/login", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify(cred) }).then(res => res.json()).then(data => {
+                if (data.message === "invalid email or password") {
+                    emailInput.style.borderColor = "#e63946"
+                    passwordInputContainer.style.borderColor = "#e63946"
+
+                    const errorMessages = document.querySelectorAll(".error-msg")
+                    console.log(errorMessages)
+                    errorMessages.forEach(e => e.innerHTML = "invalid email or password")
+                }
+
+                else {
+                    window.location="http://localhost:3000/admin"
+                }
+            }).catch(err => {
+                console.log("Error");
+            })
+        })
+
+
+
+    </script>
+
+</body>
+
+</html>
