@@ -61,8 +61,7 @@ const admin = new AdminJS({
                     new: {
                         before: async (request) => {
                             const module_id = request.payload.module;
-                            request.payload = { ...request.payload, owner: "fbc04bbc-8633-49d5-bc52-00027c1b0e41", module: parseInt(module_id) }
-                            console.log(request.payload)
+                            request.payload = { ...request.payload, owner: request.user_id, module: parseInt(module_id) }
                             return request;
                         }
                     }

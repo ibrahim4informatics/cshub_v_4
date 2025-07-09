@@ -1,16 +1,16 @@
 import { Router } from "express";
-
-
+import { addDocumentToFavourites, getDocuments, getFavouriteDocuments, removeDocumentFromFavourites } from "../controllers/documents.js";
+import isAuth from "../midlewares/auth.midleware.js"
 const router = Router();
 
-router.get("/", (req, res) => {
-
-});
 
 
-router.post("/favourites", (req, res) => { });
-router.delete("/favourites", (req, res) => { });
-router.get("/favourites", () => {});
+router.get("/", getDocuments);
+
+router.post("/favourites/:document_id", isAuth, addDocumentToFavourites);
+router.delete("/favourites/:favourite_id", isAuth, removeDocumentFromFavourites);
+
+router.get("/favourites", isAuth, getFavouriteDocuments);
 
 
 export default router;

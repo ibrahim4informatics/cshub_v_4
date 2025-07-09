@@ -1,11 +1,10 @@
-import { ActivityIndicator, Alert, Pressable, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Pressable, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from 'react'
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
-import { Button } from '@react-navigation/elements';
 
 
 const shcema = z.object({
@@ -22,13 +21,13 @@ const LoginForm = () => {
         return new Promise((res) => {
             setTimeout(() => {
                 console.log(data);
-                Alert.alert("CSHUB", "User Register Success", [{ text: "Ok", onPress: () => { return }}])
+                Alert.alert("CSHUB", "User Login Success", [{ text: "Ok", onPress: () => { router.replace("/(main)")}}])
                 res(data);
             }, 2000);
         })
     }
     return (
-        <View className='my-2 w-full'>
+        <KeyboardAvoidingView keyboardVerticalOffset={40} className='my-2 w-full'>
             <Controller control={control} render={({ field: { value, onBlur, onChange } }) => (<TextInput onChangeText={onChange} onBlur={onBlur} value={value} className='border-none bg-gray-800  text-white rounded-md h-16 px-4 py-4 my-2 placeholder:text-gray-500' placeholder='Email.' />
             )} name='email' />
             {errors.email && <Text className='text-red-400'>invalid email or password</Text>}
@@ -39,7 +38,7 @@ const LoginForm = () => {
             </View>
             {errors.password && <Text className='text-red-400'>invalid email or password</Text>}
 
-            <Link className='text-blue-600 my-2' href={"/(auth)/login"}>
+            <Link className='text-blue-600 my-2' href={"/(auth)/forgot-password"}>
                 Forgot Password?
             </Link>
             <TouchableOpacity className="bg-blue-800 p-6 rounded-md my-4" disabled={isSubmitting}>
@@ -53,28 +52,8 @@ const LoginForm = () => {
                 </TouchableOpacity>
             </Link>
 
-            <View className='flex items-center flex-row my-4'>
-                <View className='h-[1px] bg-gray-700 flex-1' />
-                <Text className='text-gray-500 font-bold mx-2'>OR</Text>
-                <View className='h-[1px] bg-gray-700 flex-1' />
-            </View>
-
-            <View className='my-2 flex-row items-center justify-center gap-4'>
-                <TouchableOpacity className="bg-blue-800  p-6 rounded-full my-4">
-                    <Ionicons name='logo-google' color={"white"} size={30} />
-                </TouchableOpacity>
-
-                <TouchableOpacity className="bg-blue-800  p-6 rounded-full my-4">
-                    <Ionicons name='logo-facebook' color={"white"} size={30} />
-                </TouchableOpacity>
-
-                <TouchableOpacity className="bg-blue-800  p-6 rounded-full my-4">
-                    <Ionicons name='logo-whatsapp' color={"white"} size={30} />
-                </TouchableOpacity>
-
-            </View>
-
-        </View>
+           
+        </KeyboardAvoidingView>
     )
 }
 

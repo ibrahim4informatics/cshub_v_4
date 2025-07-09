@@ -3,6 +3,8 @@ import prisma from "../utils/db.js";
 import jwt from "jsonwebtoken";
 import ENV from "../config/ENV.js";
 import zodErrorExtractor from "../utils/zodErrorExtractor.js";
+import path from "path";
+import { z } from "zod";
 
 
 const getLoginRoute = (req, res) => {
@@ -22,19 +24,21 @@ const loginUsers = async (req, res) => {
     }
 
     try {
-        const user = await prisma.user.findUnique({ where: { email: data.email } });
-        if (!user) return res.status(401).json({ message: "invalid email or password" });
+        const user = await prisma.user.findUnique({ where: { email: data.email }, select: { password: true, id: true } });
+        if (!user) return res.status(404).json({ message: "invalid email or password" });
 
-        if (!(await bcrypt.compare(data.password, user.password))) return res.status(401).json({ message: "invalid email or password" });
-
+        if (!(await bcrypt.compare(data.password, user.password))) {
+            return res.status(401).json({ message: "invalid email or password" });
+        }
         const accessToken = await jwt.sign({ user_id: user.id }, ENV.JWT_ACCESS_SECRET, { expiresIn: "15m" })
-        const refreshToken = await jwt.sign({ user_id: user.id }, ENV.JWT_ACCESS_SECRET, { expiresIn: "30d" })
+        const refreshToken = await jwt.sign({ user_id: user.id }, ENV.JWT_REFRESH_SECRET, { expiresIn: "30d" })
         res.cookie("access", accessToken, { httpOnly: true, secure: ENV.mode === "production", sameSite: "strict", maxAge: 1000 * 60 * 15 });
         res.cookie("refresh", refreshToken, { httpOnly: true, secure: ENV.mode === "production", sameSite: "strict", maxAge: 1000 * 60 * 60 * 24 * 30 });
         return res.status(200).json({ access: accessToken, refresh: refreshToken });
     }
 
     catch (err) {
+        console.log(err)
         return res.status(401).json({ message: "invalid email or password" });
     }
 
@@ -71,6 +75,26 @@ const checkUserAutentication = (req, res) => {
 
 }
 
+
+const refreshToken = async (req, res) => {
+    if (req.headers["x-plateform"] === "Mobile") {
+
+        const refreshToken = req.body.refresh;
+        if (!refreshToken) return res.status(401).json({ message: "user is not authenticated" });
+        try {
+            const payload = await jwt.verify(refreshToken, ENV.JWT_REFRESH_SECRET);
+            const newAccessToken = jwt.sign({ user_id: payload.user_id }, ENV.JWT_ACCESS_SECRET, { expiresIn: "15m" });
+            return res.status(200).json({ access: newAccessToken });
+        }
+        catch (err) {
+            return res.status(401).json({ message: "user is not authenticated" });
+        }
+    }
+    else {
+        return res.status(404).json({ message: "Route Was not found" });
+    }
+}
+
 export {
-    getLoginRoute, loginUsers, registerNewUser, checkUserAutentication
+    getLoginRoute, loginUsers, registerNewUser, checkUserAutentication, refreshToken
 }
