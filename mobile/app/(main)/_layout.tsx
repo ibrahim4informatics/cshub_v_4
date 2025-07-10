@@ -19,6 +19,7 @@ const MainLayout = () => {
             },
         }}>
             <Tabs.Screen name='index' options={{ headerShown: false, tabBarIcon: ({size, color})=> <Ionicons color={color} size={size}  name='home' /> }} />
+            <Tabs.Screen name='favourites' options={{ headerShown: false, tabBarIcon: ({size, color})=> <Ionicons color={color} size={size}  name='star' /> }} />
             <Tabs.Screen name='profile' options={{ headerShown: false, tabBarIcon: ({size, color})=> <Ionicons color={color} size={size}  name='person' /> }} />
         </Tabs>
     )

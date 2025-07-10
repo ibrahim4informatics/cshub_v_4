@@ -1,4 +1,4 @@
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Pressable, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, Alert, Pressable, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from 'react'
 import { Link, router } from 'expo-router';
@@ -27,12 +27,12 @@ const LoginForm = () => {
         })
     }
     return (
-        <KeyboardAvoidingView keyboardVerticalOffset={40} className='my-2 w-full'>
+        <>
             <Controller control={control} render={({ field: { value, onBlur, onChange } }) => (<TextInput onChangeText={onChange} onBlur={onBlur} value={value} className='border-none bg-gray-800  text-white rounded-md h-16 px-4 py-4 my-2 placeholder:text-gray-500' placeholder='Email.' />
             )} name='email' />
             {errors.email && <Text className='text-red-400'>invalid email or password</Text>}
             <View className='flex flex-row bg-gray-800 my-2 items-center rounded-md'>
-                <Controller control={control} name='password' render={({ field }) => (<TextInput secureTextEntry={showPassword} className='border-none flex-1 text-white bg-gray-800  rounded-md h-16 px-4 py-4 my-2 placeholder:text-gray-500'
+                <Controller control={control} name='password' render={({ field }) => (<TextInput secureTextEntry={!showPassword} className='border-none flex-1 text-white bg-gray-800  rounded-md h-16 px-4 py-4 my-2 placeholder:text-gray-500'
                     placeholder='Password.' onBlur={field.onBlur} onChangeText={field.onChange} value={field.value} />)} />
                 <Pressable onPress={() => setShowPassword(prev => !prev)} className='mx-4'><Ionicons size={20} color={"#6A7282"} name={showPassword ? "eye-off-outline" : "eye-outline"} /></Pressable>
             </View>
@@ -53,7 +53,7 @@ const LoginForm = () => {
             </Link>
 
            
-        </KeyboardAvoidingView>
+        </>
     )
 }
 

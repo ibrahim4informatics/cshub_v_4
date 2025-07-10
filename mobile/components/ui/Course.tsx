@@ -11,7 +11,7 @@ type Props = {
 }
 const Course: React.FC<Props> = ({ title, link, module, type }) => {
     return (
-        <View className='w-full my-2 bg-gray-800 px-2 py-4 rounded-md'>
+        <View className='w-full my-2 bg-gray-800 px-2 py-4 rounded-md' style={{elevation:2, shadowColor:"#fff"}}>
             <View className='w-full flex-row items-center gap-2 my-1'>
                 <Text className='text-white text-lg font-bold'>{title}</Text>
 
