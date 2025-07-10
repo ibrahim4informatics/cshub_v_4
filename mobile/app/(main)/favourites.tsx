@@ -1,10 +1,12 @@
-import { View, Text, FlatList, TextInput, TouchableOpacity, Modal } from 'react-native'
-import React, { useState } from 'react'
+import { View, Text, FlatList, TextInput, TouchableOpacity } from 'react-native'
+import React, { useContext, useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Course from '@/components/ui/Course';
-import { Picker } from "@react-native-picker/picker"
 import { Ionicons } from '@expo/vector-icons';
-import modules from '@/fake/modules';
+import FiltersComponentModal from '@/components/ui/FiltersComponentModal';
+import { FiltersContext } from '@/contexts/FiltersContext';
+import SearchBar from '@/components/ui/SearchBar';
+
 
 const DATA = [
     { id: 1, title: "Encapsulation", module: "POO", type: "COURS", link: "http:link.com" },
@@ -25,75 +27,61 @@ const DATA = [
 ]
 
 
-type FilterModalComponentProps = {
-    visible: boolean,
-    setIsVisible: React.Dispatch<React.SetStateAction<boolean>>
-}
-const FilterModalComponent: React.FC<FilterModalComponentProps> = ({ visible, setIsVisible }) => {
-    const [filters, setFilters] = useState({ type: "", module: 0 });
-    return (
-        <Modal className='flex-1' animationType='slide' transparent visible={visible} onRequestClose={() => { setIsVisible(false) }}>
-
-            <View className='flex-1 bg-[rgba(0,0,0,.6)] justify-end'>
-                <View className='bg-gray-800 p-4 rounded-t-xl'>
-                    <Text className='text-white text-2xl font-bold text-center my-2'>Filter</Text>
-
-                    <Picker style={{ color: "#fff", backgroundColor: "#101828", marginVertical: 12 }} dropdownIconColor={"#fff"} onValueChange={(val) => setFilters({ ...filters, type: val })} selectedValue={filters.type} >
-                        <Picker.Item label='All' value={""} />
-                        <Picker.Item label='Cours' value={"COURS"} />
-                        <Picker.Item label='Exam' value={"EXAM"} />
-                        <Picker.Item label='Td' value={"TD"} />
-                        <Picker.Item label='Tp' value={"TP"} />
-
-                    </Picker>
-
-
-
-
-                    <Picker style={{ color: "#fff", backgroundColor: "#101828", marginVertical: 12 }} dropdownIconColor={"#fff"} onValueChange={(val) => setFilters({ ...filters, module: parseInt(val) })} selectedValue={filters.type} >
-                        <Picker.Item label='All' value={0} />
-                        {modules.map(module => <Picker.Item key={module.id} label={module.name} value={module.id} />)}
-
-                    </Picker>
-
-
-
-
-                    <TouchableOpacity onPress={() => { console.log("fetch new docs"); setIsVisible(false) }} className=' bg-blue-700 justify-center items-center px-6 py-4 rounded-md my-2'><Text className='text-lg text-white font-semibold'>Save</Text></TouchableOpacity>
-                </View>
-            </View>
-
-
-        </Modal>
-    )
-}
 
 const Favourites = () => {
 
     const [filtersModalVisible, setFiltersVisible] = useState(false);
+    const { filters } = useContext(FiltersContext);
+    const [documents, setDocuments] = useState<{
+        id: number;
+        title: string;
+        module: string;
+        type: string;
+        link: string;
+    }[]>([]);
+
+    useEffect(() => {
+
+        let d = DATA;
+
+        if (filters.title) {
+            d = d.filter(el => el.title.includes(filters.title!))
+        }
+
+        if (filters.type) {
+            d = d.filter(el => el.type == filters.type)
+        }
+
+        if (filters.module) {
+            d = d.filter(el => el.module == "POO")
+        }
+        setDocuments(d);
+        console.log(filters)
+
+    }, [filters.module, filters.type, filters.title])
+
+
     return (
         <SafeAreaView className='flex-1 bg-gray-900'>
 
             <Text className='text-center text-3xl font-extrabold text-white my-4'>Favourites</Text>
             <FlatList
+                ListEmptyComponent={() => <View className='flex-1 justify-center items-center  my-4'><Text className='text-gray-400 text-lg'>No Results</Text></View>}
                 ListHeaderComponent={() => (
                     <View className='w-full my-2 flex-row items-center gap-2'>
 
-                        <View className='flex-1 rounded-md flex-row bg-gray-800 mx-2 p-2 items-center gap-2'>
-                            <TextInput placeholder='Add Title.' className='bg-transparent h-full flex-1 text-white placeholder:text-gray-400' />
-                            <TouchableOpacity className='p-2'><Ionicons color={"#fff"} size={20} name='search' /></TouchableOpacity>
-                        </View>
 
+                        <SearchBar />
                         <TouchableOpacity onPress={() => setFiltersVisible(true)} className='p-4 mr-2 rounded-md bg-blue-700 items-center justify-center'><Ionicons color={"#fff"} size={20} name='filter' /></TouchableOpacity>
 
                     </View>
                 )}
-                data={DATA}
+                data={documents}
                 renderItem={({ item }) => <Course title={item.title} type={item.type} link={item.link} module={item.module} />}
                 keyExtractor={(item) => item.id.toString()}
             />
 
-            <FilterModalComponent visible={filtersModalVisible} setIsVisible={setFiltersVisible} />
+            <FiltersComponentModal visible={filtersModalVisible} setIsVisible={setFiltersVisible} />
         </SafeAreaView>
     )
 }
