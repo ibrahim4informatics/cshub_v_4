@@ -1,8 +1,14 @@
-import { View, Text, ScrollView, TextInput, TouchableOpacity, FlatList } from 'react-native'
-import React from 'react'
+import { View, Text, ScrollView, TextInput, TouchableOpacity, FlatList, Alert } from 'react-native'
+import React, { useContext, useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import Course from '@/components/ui/Course'
+import SearchBar from '@/components/ui/SearchBar'
+import FiltersComponentModal from '@/components/ui/FiltersComponentModal'
+import fetcher from '@/config/axios'
+import useAuth from '@/hooks/useAuth'
+import { FiltersContext } from '@/contexts/FiltersContext'
+import { getDocuments } from '@/services/documentsService'
 
 const DATA = [
   { id: 1, title: "Encapsulation", module: "POO", type: "COURS", link: "http:link.com" },
@@ -23,6 +29,37 @@ const DATA = [
 ]
 
 const Index = () => {
+
+  useAuth();
+  const [data, setData] = useState<{
+    id: number;
+    title: string;
+    module: { [key: string]: any };
+    type: string;
+    link: string;
+  }[]>([])
+  const [filtersModalVisible, setFiltersVisible] = useState(false);
+  const { filters, setFilters } = useContext(FiltersContext);
+  useEffect(() => {
+    setFilters({ module_id: 0, title: "", type: "" });
+  }, [])
+
+
+  useEffect(() => {
+
+    getDocuments(filters).then(res => {
+      setData(res.documents)
+    }).catch(err => {
+      if (err.status === 404) {
+        setData([]);
+      }
+
+      else {
+        Alert.alert("Error Getting Documents", "Make sure you have internet connection");
+      }
+    })
+  }, [filters.module_id, filters.title, filters.type])
+
   return (
     <SafeAreaView className='flex-1 bg-gray-900 p-3 '>
 
@@ -33,8 +70,8 @@ const Index = () => {
 
 
       <FlatList
-      stickyHeaderHiddenOnScroll
-      showsVerticalScrollIndicator={false}
+        stickyHeaderHiddenOnScroll
+        showsVerticalScrollIndicator={false}
         ListHeaderComponent={() => (
 
           <View className='fixed'>
@@ -42,17 +79,19 @@ const Index = () => {
             <Text className='text-gray-600 font-bold my-2'>we wish that everything is allright with you to start studying with our plateform.</Text>
 
 
-            <View className='flex-row w-full my-4 items-center gap-2 '>
-              <TextInput placeholder='search.' className='flex-1 bg-gray-800 rounded-md text-white  placeholder:text-gray-400 px-4 py-6' />
-              <TouchableOpacity className=' bg-transparent rounded-md px-6 py-6 items-center justify-center'>
-                <Ionicons name='search' size={18} color={"#ffffff"} />
-              </TouchableOpacity>
+            <View className='flex-row'>
+              <SearchBar />
+
+              <TouchableOpacity onPress={() => setFiltersVisible(true)} className='p-4 mr-2 rounded-md bg-blue-700 items-center justify-center'><Ionicons color={"#fff"} size={20} name='filter' /></TouchableOpacity>
+
+
             </View>
           </View>
 
         )}
-        data={DATA}
-        renderItem={({ item }) => <Course title={item.title} link={item.link} module={item.module} type={item.type} />}
+        ListEmptyComponent={()=> <Text className='text-gray-400 font-bold my-6'>No Results.</Text>}
+        data={data}
+        renderItem={({ item }) => <Course id={item.id} title={item.title} link={item.link} module={item.module.name} type={item.type} />}
         keyExtractor={item => item.id.toString()}
         onEndReached={() => {
           console.log("fetch more")
@@ -61,7 +100,7 @@ const Index = () => {
       />
 
 
-
+      <FiltersComponentModal visible={filtersModalVisible} setIsVisible={setFiltersVisible} />
 
 
     </SafeAreaView>

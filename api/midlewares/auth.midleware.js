@@ -6,7 +6,6 @@ export default async (req, res, next) => {
     const token = req.headers.authorization || req.cookies.access;
     if (!token) {
         if (req.headers["x-plateform"] == "Mobile") {
-            console.log("first")
             return res.status(401).json({ message: "user is not authenticated" });
         }
         if (req.cookies.refresh) {

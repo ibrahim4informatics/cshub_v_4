@@ -71,7 +71,7 @@ const registerNewUser = async (req, res) => {
 
 const checkUserAutentication = (req, res) => {
 
-    return res.status(403).json({ message: "User is Logged In" })
+    return res.status(200).json({ message: "User is Logged In" })
 
 }
 

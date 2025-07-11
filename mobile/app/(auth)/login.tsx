@@ -1,13 +1,25 @@
 import { View, Text, Image, ScrollView, KeyboardAvoidingView, Platform } from 'react-native'
-import React from 'react'
+import React, { useContext, useEffect } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import LoginForm from '@/components/forms/LoginForm'
+import { AuthContext } from '@/contexts/AuthContext'
+import { router } from 'expo-router'
 
 
 const login = () => {
+    const { isAuth } = useContext(AuthContext);
+
+
+    useEffect(() => {
+        if (isAuth) {
+            return router.replace("/(main)")
+        }
+
+        else return
+    }, [isAuth]);
     return (
         <ScrollView showsVerticalScrollIndicator={false} className='bg-gray-900 flex-1'>
-            <KeyboardAvoidingView  behavior={Platform.OS === "ios" ? "padding" : "height"} className='flex-1 bg-gray-900'>
+            <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} className='flex-1 bg-gray-900'>
                 <SafeAreaView className='flex-1 p-4'>
 
                     <ScrollView>

@@ -1,11 +1,13 @@
-import { ActivityIndicator, Alert, Pressable, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, Pressable, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { Ionicons } from "@expo/vector-icons";
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { Link, router } from 'expo-router';
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
-
+import { AuthContext } from '@/contexts/AuthContext';
+import { loginUser } from '@/services/authService';
+import * as secureStorage from "expo-secure-store";
 
 const shcema = z.object({
     email: z.string().email({ message: "invalid email or passwod" }),
@@ -13,18 +15,34 @@ const shcema = z.object({
 })
 
 const LoginForm = () => {
+
+    const { setIsAuth, setIsLoaded } = useContext(AuthContext);
     const { control, formState: { isSubmitting, errors }, setError, handleSubmit } = useForm({ resolver: zodResolver(shcema) });
     const [showPassword, setShowPassword] = useState(false);
 
     const onSubmit: SubmitHandler<z.infer<typeof shcema>> = async (data) => {
-        console.log("first")
-        return new Promise((res) => {
-            setTimeout(() => {
-                console.log(data);
-                Alert.alert("CSHUB", "User Login Success", [{ text: "Ok", onPress: () => { router.replace("/(main)")}}])
-                res(data);
-            }, 2000);
+        setIsLoaded(false);
+
+        const loginPromise = loginUser(data);
+
+        loginPromise.then(async (data: any) => {
+            await secureStorage.setItemAsync("access", data.access);
+            await secureStorage.setItemAsync("refresh", data.refresh);
+            setIsAuth(true);
+
+            return router.replace("/(main)");
         })
+            .catch(err => {
+                setError("email", { message: "invalid email or password" });
+                setError("password", { message: "invalid email or password" });
+                return;
+            });
+
+        setIsLoaded(true);
+
+        return loginPromise;
+
+
     }
     return (
         <>
@@ -52,7 +70,7 @@ const LoginForm = () => {
                 </TouchableOpacity>
             </Link>
 
-           
+
         </>
     )
 }

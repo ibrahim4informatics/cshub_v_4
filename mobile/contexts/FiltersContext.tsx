@@ -1,7 +1,7 @@
 import React, { useState, createContext } from "react";
 
 type Filters = {
-    module?: number;
+    module_id?: number;
     type?: string;
     title?:string
 };
@@ -13,12 +13,12 @@ export type FilterContextType = {
 
 
 export const FiltersContext = createContext<FilterContextType>({
-    filters: { module: 0, type: "", title:"" },
+    filters: { module_id: 0, type: "", title:"" },
     setFilters: () => {}, 
 });
 
 const FilterContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [filters, setFilters] = useState<Filters>({ module: 0, type: "", title:"" });
+    const [filters, setFilters] = useState<Filters>({ module_id: 0, type: "", title:"" });
 
     return (
         <FiltersContext.Provider value={{ filters, setFilters }}>

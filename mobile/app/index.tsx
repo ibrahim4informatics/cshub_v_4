@@ -1,8 +1,13 @@
+import { AuthContext } from "@/contexts/AuthContext";
+import useAuth from "@/hooks/useAuth";
 import { Link } from "expo-router";
-import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { useContext } from "react";
+import { Image, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Index() {
+  useAuth();
+  const { isAuth } = useContext(AuthContext);
   return (
     <View className="flex-1 bg-gray-900">
 
@@ -22,15 +27,10 @@ export default function Index() {
         </Text>
 
 
-        <TouchableOpacity className="bg-gray-800 p-6 rounded-md mb-4 mt-auto">
-          <Text className="text-2xl font-bold text-white text-center">Get Started</Text>
-        </TouchableOpacity>
-
-
 
         <Link href={"/login"} asChild>
           <TouchableOpacity className="bg-blue-800 p-6 rounded-md my-4">
-            <Text className="text-2xl font-bold text-white text-center">Login</Text>
+            <Text className="text-2xl font-bold text-white text-center">{isAuth ? "Get Started" : "Login"}</Text>
           </TouchableOpacity>
         </Link>
 
