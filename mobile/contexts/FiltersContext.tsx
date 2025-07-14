@@ -3,7 +3,8 @@ import React, { useState, createContext } from "react";
 type Filters = {
     module_id?: number;
     type?: string;
-    title?:string
+    title?: string,
+    page: number,
 };
 
 export type FilterContextType = {
@@ -13,12 +14,12 @@ export type FilterContextType = {
 
 
 export const FiltersContext = createContext<FilterContextType>({
-    filters: { module_id: 0, type: "", title:"" },
-    setFilters: () => {}, 
+    filters: { module_id: 0, type: "", title: "", page: 1 },
+    setFilters: () => { },
 });
 
 const FilterContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [filters, setFilters] = useState<Filters>({ module_id: 0, type: "", title:"" });
+    const [filters, setFilters] = useState<Filters>({ module_id: 0, type: "", title: "", page: 1 });
 
     return (
         <FiltersContext.Provider value={{ filters, setFilters }}>

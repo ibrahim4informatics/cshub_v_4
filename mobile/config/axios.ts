@@ -4,7 +4,7 @@ import * as secureStorage from "expo-secure-store";
 
 const fetcher = axios.create(
     {
-        baseURL: "http://192.168.1.7:3000",
+        baseURL: "http://192.168.1.11:3000",
         headers: {
             ["x-plateform"]: "Mobile"
         }
@@ -52,7 +52,6 @@ const refreshToken = async () => {
         return true;
     }
     catch (err) {
-        console.log(JSON.stringify(err));
         return false
     }
 }

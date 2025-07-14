@@ -11,6 +11,7 @@ const GetDocumentQuerySchema = z.object({
 
 const getDocuments = async (req, res) => {
 
+
     // define the shcema for get document query to filter
 
     const { success, data, error } = await GetDocumentQuerySchema.safeParseAsync(req.query);
@@ -41,11 +42,18 @@ const getDocuments = async (req, res) => {
         }
         const documents = await prisma.document.findMany({
             where: fetchOptions,
-            include: { module: true },
+            include: { module: true, favourite_by: true },
             take: data.document_per_page,
             skip: data.document_per_page * (data.page - 1)
         });
-        return res.status(200).json({ documents, meta_data: { ...data, max_page } });
+
+        const favouriteDocsIds = (await prisma.favourite.findMany({ where: { user_id: req.user_id }, select: { document_id: true } })).map(idobj => idobj.document_id);
+
+        return res.status(200).json({
+            documents: documents.map(doc => {
+                return { ...doc, is_favourite: favouriteDocsIds.includes(doc.id) ? true : false }
+            }), meta_data: { ...data, max_page }
+        });
     }
 
     catch (err) {
@@ -94,12 +102,12 @@ const getFavouriteDocuments = async (req, res) => {
 const addDocumentToFavourites = async (req, res) => {
 
     const { document_id } = req.params;
-    const user_id = req.user_id || " 6ec0e10c-5447-4250-9adc-1f61293c9ecc";
+    const user_id = req.user_id;
 
     try {
-        const exist = await prisma.favourite.findFirst({ where: { user_id, document_id } });
+        const exist = await prisma.favourite.findFirst({ where: { user_id, document_id: parseInt(document_id) } });
         if (exist) return res.status(400).json({ message: "the document is already in favourite list" });
-        await prisma.favourite.create({ data: { user_id, document_id } });
+        await prisma.favourite.create({ data: { user_id, document_id: parseInt(document_id) } });
         return res.status(201).json({ message: "document added to favourites list" });
     }
     catch (err) {
@@ -110,13 +118,13 @@ const addDocumentToFavourites = async (req, res) => {
 
 
 const removeDocumentFromFavourites = async (req, res) => {
-    const { favourite_id } = req.params;
-    const user_id = req.user_id || " 6ec0e10c-5447-4250-9adc-1f61293c9ecc";
+    const { document_id } = req.params;
+    const user_id = req.user_id;
 
     try {
-        const exist = await prisma.favourite.findFirst({ where: { user_id, id: favourite_id } });
-        if (exist) return res.status(400).json({ message: "can not delete favourite not found" });
-        await prisma.favourite.delete({ where: { id: favourite_id } });
+        const exist = await prisma.favourite.findFirst({ where: { user_id, document_id: parseInt(document_id) } });
+        if (!exist) return res.status(404).json({ message: "can not delete favourite not found" });
+        await prisma.favourite.delete({ where: { document_id: parseInt(document_id), user_id, id:exist.id } });
         return res.status(200).json({ message: "document deleted from favourites list" });
     }
     catch (err) {

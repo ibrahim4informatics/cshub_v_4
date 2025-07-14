@@ -33,6 +33,7 @@ const LoginForm = () => {
             return router.replace("/(main)");
         })
             .catch(err => {
+                console.log(err)
                 setError("email", { message: "invalid email or password" });
                 setError("password", { message: "invalid email or password" });
                 return;

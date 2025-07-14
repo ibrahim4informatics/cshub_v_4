@@ -5,10 +5,10 @@ const router = Router();
 
 
 
-router.get("/", getDocuments);
+router.get("/", isAuth,getDocuments);
 
 router.post("/favourites/:document_id", isAuth, addDocumentToFavourites);
-router.delete("/favourites/:favourite_id", isAuth, removeDocumentFromFavourites);
+router.delete("/favourites/:document_id", isAuth, removeDocumentFromFavourites);
 
 router.get("/favourites", isAuth, getFavouriteDocuments);
 

@@ -1,64 +1,99 @@
 import { View, Text, ScrollView, TextInput, TouchableOpacity, FlatList, Alert } from 'react-native'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import Course from '@/components/ui/Course'
 import SearchBar from '@/components/ui/SearchBar'
 import FiltersComponentModal from '@/components/ui/FiltersComponentModal'
-import fetcher from '@/config/axios'
 import useAuth from '@/hooks/useAuth'
 import { FiltersContext } from '@/contexts/FiltersContext'
 import { getDocuments } from '@/services/documentsService'
+import { useFocusEffect } from 'expo-router'
 
-const DATA = [
-  { id: 1, title: "Encapsulation", module: "POO", type: "COURS", link: "http:link.com" },
-  { id: 2, title: "OSI System", module: "RC", type: "COURS", link: "http:link.com" },
-  { id: 3, title: "Complexcity", module: "ASD3", type: "COURS", link: "http:link.com" },
-  { id: 4, title: "C/C++ Introduction", module: "ASD1", type: "COURS", link: "http:link.com" },
-  { id: 5, title: "Calculus", module: "ANALYSE", type: "TD", link: "http:link.com" },
-  { id: 6, title: "Graphs", module: "ASD3", type: "COURS", link: "http:link.com" },
-  { id: 7, title: "Stack", module: "ASD2", type: "COURS", link: "http:link.com" },
-  { id: 8, title: "Matlab", module: "OM", type: "COURS", link: "http:link.com" },
-  { id: 9, title: "Encapsulation", module: "POO", type: "COURS", link: "http:link.com" },
-  { id: 10, title: "Encapsulation", module: "POO", type: "COURS", link: "http:link.com" },
-  { id: 11, title: "Encapsulation", module: "POO", type: "COURS", link: "http:link.com" },
-  { id: 12, title: "Encapsulation", module: "POO", type: "COURS", link: "http:link.com" },
-  { id: 13, title: "Encapsulation", module: "POO", type: "COURS", link: "http:link.com" },
-  { id: 14, title: "Encapsulation", module: "POO", type: "COURS", link: "http:link.com" },
-  { id: 15, title: "Encapsulation", module: "POO", type: "COURS", link: "http:link.com" },
-]
+
+type Document = {
+  id: number;
+  title: string;
+  module: { [key: string]: any };
+  type: string;
+  download_link: string;
+  is_favourite: boolean
+}
+
 
 const Index = () => {
 
   useAuth();
-  const [data, setData] = useState<{
-    id: number;
-    title: string;
-    module: { [key: string]: any };
-    type: string;
-    link: string;
-  }[]>([])
+  const [data, setData] = useState<{ documents: Document[], meta_data: { [key: string]: any } }>({ meta_data: {}, documents: [] });
   const [filtersModalVisible, setFiltersVisible] = useState(false);
   const { filters, setFilters } = useContext(FiltersContext);
+
   useEffect(() => {
-    setFilters({ module_id: 0, title: "", type: "" });
+    setFilters({ module_id: 0, title: "", type: "", page: 1 });
   }, [])
 
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
 
     getDocuments(filters).then(res => {
-      setData(res.documents)
+      setData(res)
     }).catch(err => {
       if (err.status === 404) {
-        setData([]);
+        setData({ ...data, documents: [] });
       }
 
       else {
         Alert.alert("Error Getting Documents", "Make sure you have internet connection");
       }
     })
-  }, [filters.module_id, filters.title, filters.type])
+
+    return () => {
+      setFilters({ module_id: 0, type: "", title: "", page: 1 });
+      setData({ meta_data: {}, documents: [] });
+    }
+
+  }, []))
+
+  useEffect(() => {
+
+    getDocuments(filters).then(res => {
+      setData({ meta_data: res.meta_data, documents: res.documents })
+    }).catch(err => {
+      if (err.status === 404) {
+        setData({ ...data, documents: [] });
+      }
+
+      else {
+        Alert.alert("Error Getting Documents", "Make sure you have internet connection");
+      }
+    })
+  }, [filters.module_id, filters.title, filters.type]);
+
+
+  useEffect(() => {
+
+
+    getDocuments(filters).then(res => {
+      setData({ meta_data: res.meta_data, documents: data.documents.concat(res.documents) })
+    }).catch(err => {
+      if (err.status === 404) {
+        setData({ ...data, documents: data.documents.concat([]) });
+      }
+
+      else {
+        Alert.alert("Error Getting Documents", "Make sure you have internet connection");
+      }
+    })
+
+  }, [filters.page]);
+
+
+  const fetchMore = () => {
+
+    if (filters.page < data.meta_data.max_page) {
+      setFilters({ ...filters, page: filters.page + 1 })
+    }
+  }
 
   return (
     <SafeAreaView className='flex-1 bg-gray-900 p-3 '>
@@ -69,9 +104,12 @@ const Index = () => {
 
 
 
+
+
       <FlatList
         stickyHeaderHiddenOnScroll
         showsVerticalScrollIndicator={false}
+
         ListHeaderComponent={() => (
 
           <View className='fixed'>
@@ -79,7 +117,7 @@ const Index = () => {
             <Text className='text-gray-600 font-bold my-2'>we wish that everything is allright with you to start studying with our plateform.</Text>
 
 
-            <View className='flex-row'>
+            <View className='flex-row my-2'>
               <SearchBar />
 
               <TouchableOpacity onPress={() => setFiltersVisible(true)} className='p-4 mr-2 rounded-md bg-blue-700 items-center justify-center'><Ionicons color={"#fff"} size={20} name='filter' /></TouchableOpacity>
@@ -89,13 +127,11 @@ const Index = () => {
           </View>
 
         )}
-        ListEmptyComponent={()=> <Text className='text-gray-400 font-bold my-6'>No Results.</Text>}
-        data={data}
-        renderItem={({ item }) => <Course id={item.id} title={item.title} link={item.link} module={item.module.name} type={item.type} />}
+        ListEmptyComponent={() => <Text className='text-gray-400 font-bold my-6'>No Results.</Text>}
+        data={data.documents}
+        renderItem={({ item,index }) => <Course setData={setData} data ={data} index={index+1} is_favourite={item.is_favourite} id={item.id} title={item.title} link={item.download_link} module={item.module.name} type={item.type} />}
         keyExtractor={item => item.id.toString()}
-        onEndReached={() => {
-          console.log("fetch more")
-        }}
+        onEndReached={fetchMore}
 
       />
 

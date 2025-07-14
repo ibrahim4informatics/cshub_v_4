@@ -1,67 +1,87 @@
-import { View, Text, FlatList, TextInput, TouchableOpacity } from 'react-native'
-import React, { useContext, useEffect, useState } from 'react'
+import { View, Text, FlatList, TextInput, TouchableOpacity, Alert } from 'react-native'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Course from '@/components/ui/Course';
 import { Ionicons } from '@expo/vector-icons';
 import FiltersComponentModal from '@/components/ui/FiltersComponentModal';
 import { FiltersContext } from '@/contexts/FiltersContext';
 import SearchBar from '@/components/ui/SearchBar';
+import { getFavouritesDocuments } from '@/services/documentsService';
+import { useFocusEffect } from 'expo-router';
 
 
-const DATA = [
-    { id: 1, title: "Encapsulation", module: "POO", type: "COURS", link: "http:link.com" },
-    { id: 2, title: "OSI System", module: "RC", type: "COURS", link: "http:link.com" },
-    { id: 3, title: "Complexcity", module: "ASD3", type: "COURS", link: "http:link.com" },
-    { id: 4, title: "C/C++ Introduction", module: "ASD1", type: "COURS", link: "http:link.com" },
-    { id: 5, title: "Calculus", module: "ANALYSE", type: "TD", link: "http:link.com" },
-    { id: 6, title: "Graphs", module: "ASD3", type: "COURS", link: "http:link.com" },
-    { id: 7, title: "Stack", module: "ASD2", type: "COURS", link: "http:link.com" },
-    { id: 8, title: "Matlab", module: "OM", type: "COURS", link: "http:link.com" },
-    { id: 9, title: "Encapsulation", module: "POO", type: "COURS", link: "http:link.com" },
-    { id: 10, title: "Encapsulation", module: "POO", type: "COURS", link: "http:link.com" },
-    { id: 11, title: "Encapsulation", module: "POO", type: "COURS", link: "http:link.com" },
-    { id: 12, title: "Encapsulation", module: "POO", type: "COURS", link: "http:link.com" },
-    { id: 13, title: "Encapsulation", module: "POO", type: "COURS", link: "http:link.com" },
-    { id: 14, title: "Encapsulation", module: "POO", type: "COURS", link: "http:link.com" },
-    { id: 15, title: "Encapsulation", module: "POO", type: "COURS", link: "http:link.com" },
-]
 
-
+type Favourite = {
+    id: number;
+    document: { [key: string]: any }
+}
 
 const Favourites = () => {
-
+    const [data, setData] = useState<{
+        favourites: Favourite[],
+        meta_data: { [key: string]: any }
+    }>({ meta_data: {}, favourites: [] });
     const [filtersModalVisible, setFiltersVisible] = useState(false);
-    const { filters } = useContext(FiltersContext);
-    const [documents, setDocuments] = useState<{
-        id: number;
-        title: string;
-        module: string;
-        type: string;
-        link: string;
-    }[]>([]);
+    const { filters, setFilters } = useContext(FiltersContext);
+    useFocusEffect(
+        useCallback(() => {
+            getFavouritesDocuments(filters).then(
+                res => {  setData({ meta_data: res.meta_data, favourites: res.favourites }) }
+            ).catch(err => {
+                if (err === 404) {
+                    setData({ ...data, favourites: [] });
+                }
+
+            })
+
+
+            return () => {
+                setFilters({ page: 1, module_id: 0, type: "", title: "" });
+                setData({ meta_data: {}, favourites: [] });
+            };
+        }, [])
+    );
+
 
     useEffect(() => {
 
-        let d = DATA;
+        getFavouritesDocuments(filters).then(
+            res => { setData({ meta_data: res.meta_data, favourites: res.favourites }) }
+        ).catch(err => {
+           
+            if (err === 404) {
+                setData({ ...data, favourites: [] });
+            }
 
-        if (filters.title) {
-            d = d.filter(el => el.title.includes(filters.title!))
+        })
+
+    }, [filters.module_id, filters.type, filters.title])
+
+    useEffect(() => {
+
+
+        getFavouritesDocuments(filters).then(
+            res => { setData({ meta_data: res.meta_data, favourites: data.favourites.concat(res.favourites) }) }
+        ).catch(err => {
+            if (err.status === 404) {
+                setData({ ...data, favourites: data.favourites.concat([]) });
+            }
+           
+        })
+
+    }, [filters.page])
+
+
+    const fetchMore = () => {
+        if (filters.page < data.meta_data.max_page) {
+            setFilters({ ...filters, page: filters.page + 1 })
         }
-
-        if (filters.type) {
-            d = d.filter(el => el.type == filters.type)
-        }
-
-        if (filters.module) {
-            d = d.filter(el => el.module == "POO")
-        }
-        setDocuments(d);
-        console.log(filters)
-
-    }, [filters.module, filters.type, filters.title])
+    }
 
 
     return (
+
+
         <SafeAreaView className='flex-1 bg-gray-900'>
 
             <Text className='text-center text-3xl font-extrabold text-white my-4'>Favourites</Text>
@@ -76,8 +96,9 @@ const Favourites = () => {
 
                     </View>
                 )}
-                data={documents}
-                renderItem={({ item }) => <Course title={item.title} type={item.type} link={item.link} module={item.module} />}
+                data={data.favourites}
+                onEndReached={fetchMore}
+                renderItem={({ item, index }) => <Course index={index + 1} is_favourite id={item.document.id} title={item.document.title} type={item.document.type} link={item.document.download_link} module={item.document.module.name} />}
                 keyExtractor={(item) => item.id.toString()}
             />
 
