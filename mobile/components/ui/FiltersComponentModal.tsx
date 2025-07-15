@@ -26,7 +26,7 @@ const FiltersComponentModal:React.FC<FilterModalComponentProps> = ({visible, set
                         <Picker.Item label='All Modules' value={0} />
                         {modules.map(module => <Picker.Item key={module.id} label={module.name} value={module.id} />)}
                     </Picker>
-                    <TouchableOpacity onPress={() => { console.log(filters); setIsVisible(false) }} className=' bg-blue-700 justify-center items-center px-6 py-4 rounded-md my-2'><Text className='text-lg text-white font-semibold'>Save</Text></TouchableOpacity>
+                    <TouchableOpacity onPress={() => { setIsVisible(false) }} className=' bg-blue-700 justify-center items-center px-6 py-4 rounded-md my-2'><Text className='text-lg text-white font-semibold'>Save</Text></TouchableOpacity>
                 </View>
             </View>
         </Modal>

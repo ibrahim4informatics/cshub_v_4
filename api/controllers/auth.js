@@ -5,6 +5,8 @@ import ENV from "../config/ENV.js";
 import zodErrorExtractor from "../utils/zodErrorExtractor.js";
 import path from "path";
 import { z } from "zod";
+import otpGenerator from "otp-generator";
+import { resetPasswordEmailBuilder, transport } from "../config/nodemailer.js";
 
 
 const getLoginRoute = (req, res) => {
@@ -95,6 +97,112 @@ const refreshToken = async (req, res) => {
     }
 }
 
+
+
+const forgotPasswordOtpSender = async (req, res) => {
+    const bodySchema = z.object({
+        email: z.string().email()
+    })
+
+    try {
+
+        const body = await bodySchema.safeParseAsync(req.body);
+        if (!(body.success)) return res.status(400).json({ errors: zodErrorExtractor(body.error) });
+
+        const user = await prisma.user.findUnique({ where: { email: body.data.email } });
+        if (!user) return res.status(404).json({ message: "user does not exist with this email" });
+
+        if (user.otp_code_id) {
+            await prisma.otp.delete({ where: { id: user.otp_code_id } });
+        }
+
+        const value = otpGenerator.generate(6, { upperCaseAlphabets: false, lowerCaseAlphabets: false, specialChars: false, digits: true });
+        await prisma.otp.create({ data: { value, user: { connect: { id: user.id } } } });
+
+
+        await transport.sendMail(
+            {
+                from: `"CSHUB" <${ENV.EMAIL}>`,
+                to: user.email,
+                subject: "Reset Password Otp",
+                html: resetPasswordEmailBuilder(value)
+            }
+        )
+        return res.status(200).json({ message: "Otp code has been sent" });
+    }
+
+    catch (err) {
+        console.log(err);
+        return res.status(500).json({ message: err || "something happend please try again" });
+    }
+
+}
+
+
+const checkValidOtp = async (req, res) => {
+    const schema = z.object({
+        email: z.string().email(),
+        otp: z.string().regex(/^\d+$/, { message: "otp contains only digits" }).length(6, { message: "Otp has 6 digits" })
+    })
+
+    try {
+
+        const body = await schema.safeParseAsync(req.body);
+        if (!(body.success)) return res.status(400).json({ errors: zodErrorExtractor(body.error) });
+
+        const user = await prisma.user.findUnique({ where: { email: body.data.email } });
+        if (!user) return res.status(404).json({ message: "invalid otp sent" });
+        const otp = await prisma.otp.findUnique({ where: { id: user.otp_code_id } });
+        const now = new Date();
+        const diffMinutes = Math.floor((now - otp.created_at) / (1000 * 60));
+        if (!otp || otp.attempt >= 3 || diffMinutes > 10) return res.status(401).json({ message: "Otp is invalid or expired" });
+        if (otp.value !== body.data.otp) {
+            await prisma.otp.update({ where: { id: otp.id }, data: { attempt: otp.attempt + 1 } });
+            return res.status(401).json({ message: "the otp code is not valid" });
+        }
+        return res.status(200).json({ message: "Otp Code is Correct" });
+
+    }
+
+    catch (err) {
+        return res.status(500).json({ message: err || "something happend try later" });
+    }
+}
+
+
+const resetPasswordWithOtp = async (req, res) => {
+    const schema = z.object({
+        email: z.string().email(),
+        otp: z.string().regex(/^\d+$/, { message: "Otp should contain only digits" }).length(6, { message: "Otp has 6 digits" }),
+        new_password: z.string().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^])[A-Za-z\d@$!%*?&#^]{8,}$/, { message: "the password does not fill all requirements" })
+    })
+
+    try {
+
+        const body = await schema.safeParseAsync(req.body);
+
+        if (!(body.success)) return res.status(400).json({ errors: zodErrorExtractor(body.error) });
+
+        const user = await prisma.user.findUnique({ where: { email: body.data.email } });
+        if (!user) return res.status(404).json({ message: "can not find otp linked to this user" });
+
+
+        const otp = await prisma.otp.findUnique({ where: { id: user.otp_code_id } });
+        const now = new Date();
+        const diffMinutes = Math.floor((now - otp.created_at) / (1000 * 60));
+        if (!otp || otp.attempt >= 3 || diffMinutes > 10) return res.status(401).json({ message: "Otp is invalid or expired" });
+        if (otp.value !== body.data.otp) {
+            await prisma.otp.update({ where: { id: otp.id }, data: { attempt: otp.attempt + 1 } });
+            return res.status(401).json({ message: "the otp code is not valid" });
+        }
+        await prisma.user.update({ where: { email: user.email }, data: { password: await bcrypt.hash(body.data.new_password, 12) } })
+        return res.status(200).json({ message: "Password has been changed successfully" });
+    }
+    catch (err) {
+        return res.status(500).json({ message: err || "something happend try later" });
+    }
+}
+
 export {
-    getLoginRoute, loginUsers, registerNewUser, checkUserAutentication, refreshToken
+    getLoginRoute, loginUsers, registerNewUser, checkUserAutentication, refreshToken, forgotPasswordOtpSender, checkValidOtp,resetPasswordWithOtp
 }

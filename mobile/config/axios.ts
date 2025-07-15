@@ -4,7 +4,7 @@ import * as secureStorage from "expo-secure-store";
 
 const fetcher = axios.create(
     {
-        baseURL: "http://192.168.1.11:3000",
+        baseURL: "http://192.168.1.10:3000",
         headers: {
             ["x-plateform"]: "Mobile"
         }

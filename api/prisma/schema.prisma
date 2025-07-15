@@ -8,16 +8,27 @@ datasource db {
 }
 
 model User {
-  id         String      @id @default(uuid())
-  first_name String      @db.VarChar(35)
-  last_name  String      @db.VarChar(35)
-  password   String?
-  google_id  String?     @unique
-  email      String      @unique
-  is_admin   Boolean     @default(false)
-  created_at DateTime    @default(now())
-  documents  Document[]  @relation("owner who post the document")
-  favourites Favourite[]
+  id          String      @id @default(uuid())
+  first_name  String      @db.VarChar(35)
+  last_name   String      @db.VarChar(35)
+  password    String?
+  google_id   String?     @unique
+  email       String      @unique
+  is_admin    Boolean     @default(false)
+  created_at  DateTime    @default(now())
+  documents   Document[]  @relation("owner who post the document")
+  favourites  Favourite[]
+  otp_code_id Int?        @unique
+  otp_code    Otp?        @relation(fields: [otp_code_id], references: [id], onDelete: SetNull)
+}
+
+model Otp {
+  id         Int      @id @default(autoincrement())
+  value      String   @db.VarChar(6)
+  attempt    Int      @default(0) @db.SmallInt
+  is_valid   Boolean  @default(true)
+  user       User?
+  created_at DateTime @default(now())
 }
 
 model Module {
