@@ -18,6 +18,7 @@ const admin = new AdminJS({
     availableThemes: [light, noSidebar, dark],
     resources: [
         {
+        
             resource: { model: getModelByName("User"), client: prisma }, options: {
                 actions: {
                     new: {
