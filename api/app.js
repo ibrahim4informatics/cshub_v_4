@@ -23,5 +23,6 @@ app.use("/documents", documentsRoutes);
 app.use("/modules", modulesRouter)
 app.use("/users", usersRouter)
 app.use(admin.options.rootPath, authMidleware, adminMidleware, adminRouter);
+app.all("*", (req, res) => res.status(404).json({ message: "Not Found" }));
 
 app.listen(port, () => { console.log(`server is running on: http://localhost:${port}`) });

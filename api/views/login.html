@@ -195,7 +195,7 @@
             const cred = { email, password };
 
 
-            fetch("http://localhost:3000/auth/login", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify(cred) }).then(res => res.json()).then(data => {
+            fetch("https://cshub-v-4.onrender.com/auth/login", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify(cred) }).then(res => res.json()).then(data => {
                 if (data.message === "invalid email or password") {
                     emailInput.style.borderColor = "#e63946"
                     passwordInputContainer.style.borderColor = "#e63946"
@@ -206,7 +206,7 @@
                 }
 
                 else {
-                    window.location="http://localhost:3000/admin"
+                    window.location="https://cshub-v-4.onrender.com/admin"
                 }
             }).catch(err => {
                 console.log("Error");
