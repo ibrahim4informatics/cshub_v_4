@@ -17,6 +17,9 @@ const admin = new AdminJS({
     defaultTheme: light.id,
     availableThemes: [light, noSidebar, dark],
     resources: [
+
+     
+
         {
         
             resource: { model: getModelByName("User"), client: prisma }, options: {
@@ -83,6 +86,20 @@ const admin = new AdminJS({
                     ["updated_at"]: {
                         isVisible: { list: false }
                     }
+                }
+
+            }
+        },
+
+
+         {
+            resource: { model: getModelByName("Otp"), client: prisma }, options: {
+
+                navigation: null,
+                properties: {
+                    ["created_at"]: {
+                        isVisible: { list: false }
+                    },
                 }
 
             }
