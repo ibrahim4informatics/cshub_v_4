@@ -1,14 +1,41 @@
-import { View, Text, Modal, TouchableOpacity } from 'react-native'
-import React, { useContext, useState } from 'react'
+import { View, Text, Modal, TouchableOpacity, Alert } from 'react-native'
+import React, { useCallback, useContext, useEffect, useLayoutEffect, useState } from 'react'
 import { Picker } from '@react-native-picker/picker';
-import modules from '@/fake/modules';
+
+
+type Module = {
+    id: number,
+    name: string,
+    coeficient: number
+}
+
+
 import { FiltersContext } from '@/contexts/FiltersContext';
+import { getAllModules } from '@/services/documentsService';
 type FilterModalComponentProps = {
     visible: boolean,
     setIsVisible: React.Dispatch<React.SetStateAction<boolean>>
 }
-const FiltersComponentModal:React.FC<FilterModalComponentProps> = ({visible, setIsVisible}) => {
-    const {filters, setFilters} = useContext(FiltersContext);
+const FiltersComponentModal: React.FC<FilterModalComponentProps> = ({ visible, setIsVisible }) => {
+    const { filters, setFilters } = useContext(FiltersContext);
+
+    const [modules, setModules] = useState<Module[]>([]);
+
+    useEffect(() => {
+
+        getAllModules().then(
+            res => setModules(res.data.modules)
+        )
+
+        .catch(err => {
+            Alert.alert("Error Fetching Modules", "Check you internet Connection")
+        })
+
+        return () => {
+            setModules([]);
+        }
+
+    }, []);
     return (
         <Modal className='flex-1' animationType='slide' transparent visible={visible} onRequestClose={() => { setIsVisible(false) }}>
             <View className='flex-1 bg-[rgba(0,0,0,.6)] justify-end'>

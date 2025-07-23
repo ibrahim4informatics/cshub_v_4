@@ -78,4 +78,17 @@ const removeFromFavourites = async (id: any) => {
     }
 }
 
-export { getDocuments, getFavouritesDocuments, addTofavourites, removeFromFavourites }
+
+const getAllModules = async () => {
+    try {
+
+        const response = fetcher.get("/modules");
+        return response;
+
+    }
+
+    catch (err) {
+        throw err;
+    }
+}
+export { getDocuments, getFavouritesDocuments, addTofavourites, removeFromFavourites, getAllModules }

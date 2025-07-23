@@ -4,7 +4,7 @@ import * as secureStorage from "expo-secure-store";
 
 const fetcher = axios.create(
     {
-        baseURL: "http://192.168.1.11:3000",
+        baseURL: "https://cshub-v-4.onrender.com/",
         headers: {
             ["x-plateform"]: "Mobile"
         }

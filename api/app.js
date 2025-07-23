@@ -9,6 +9,7 @@ import authMidleware from "./midlewares/auth.midleware.js"
 import documentsRoutes from "./routes/documents.js"
 import modulesRouter from "./routes/modules.js"
 import usersRouter from "./routes/users.js"
+import job from "./config/cron.js";
 const app = express();
 const port = ENV.PORT || 3000;
 app.use(cookieParser());
@@ -18,6 +19,8 @@ app.use(cors({
 }))
 app.use(express.json());
 
+
+job();
 app.use("/auth", authRouter);
 app.use("/documents", documentsRoutes);
 app.use("/modules", modulesRouter)
